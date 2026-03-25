@@ -185,7 +185,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer mobile */}
-        <p className="text-center text-xs text-zinc-800 lg:hidden mt-8">© 2025 TodoApp</p>
+        <p className="text-center text-xs text-zinc-800 lg:hidden mt-8">© 2026 TodoApp</p>
       </div>
     </div>
   );
