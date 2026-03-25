@@ -1,0 +1,34 @@
+name: Frontend CI (Next.js)
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      # 🔧 Setup Node
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # 📦 Instalar dependências
+      - name: Install dependencies
+        run: npm install
+
+      # 🧹 Lint
+      - name: Lint
+        run: npm run lint
+
+      # 🏗️ Build (garante que não quebra)
+      - name: Build
+        run: npm run build
