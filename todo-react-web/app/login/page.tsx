@@ -74,7 +74,7 @@ export default function LoginPage() {
               </div>
             ))}
           </div>
-          <p className="text-zinc-700 text-xs border-t border-zinc-900 pt-6">© 2025 TodoApp</p>
+          <p className="text-zinc-700 text-xs border-t border-zinc-900 pt-6">© 2026 TodoApp</p>
         </div>
       </div>
 

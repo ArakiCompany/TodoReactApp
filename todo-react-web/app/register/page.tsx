@@ -118,7 +118,7 @@ export default function RegisterPage() {
           </div>
           <div className="border-t border-zinc-800 pt-6">
             <p className="text-zinc-500 text-xs">
-              © 2025 TodoApp. Todos os direitos reservados.
+              © 2026 TodoApp. Todos os direitos reservados.
             </p>
           </div>
         </div>
