@@ -9,6 +9,7 @@ import TodoInput from "./components/TodoInput";
 import TodoFilters, { Filter } from "./components/TodoFilters";
 import TodoItem from "./components/TodoItem";
 import TodoEmpty from "./components/TodoEmpty";
+import TodoSkeleton from "./components/TodoSkeleton";
 
 const GET_TODOS = gql`
   query GetTodos {
@@ -64,7 +65,7 @@ export default function TodosPage() {
     return !localStorage.getItem("token");
   });
 
-  const { data, refetch } = useQuery<GetTodosResponse>(GET_TODOS, {
+  const { data, loading, refetch } = useQuery<GetTodosResponse>(GET_TODOS, {
     skip: skipQuery,
     fetchPolicy: "network-only",
     ssr: false,
@@ -99,6 +100,23 @@ export default function TodosPage() {
   async function handleDelete(id: string) {
     await deleteTodo({ variables: { id } });
     await refetch();
+  }
+
+  if (skipQuery || loading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 relative overflow-hidden">
+        <div
+          className="absolute top-0 left-0 w-96 h-96 rounded-full pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(99,102,241,0.05) 0%, transparent 70%)",
+          }}
+        />
+        <div className="max-w-xl mx-auto px-4 sm:px-6 py-8 sm:py-10 relative z-10">
+          <TodoSkeleton />
+        </div>
+      </div>
+    );
   }
 
   return (
