@@ -23,7 +23,7 @@ const GET_TODOS = gql`
 
 const ADD_TODO = gql`
   mutation AddTodo($title: String!) {
-    addTodo(title: $title) {
+    addTodo(input: { title: $title }) {
       id
       title
       isCompleted

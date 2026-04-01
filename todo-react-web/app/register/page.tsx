@@ -7,9 +7,10 @@ import { useRouter } from "next/navigation";
 
 const REGISTER = gql`
   mutation Register($email: String!, $password: String!) {
-    register(email: $email, password: $password) {
+    register(input: { email: $email, password: $password }) {
       token
       email
+      role
     }
   }
 `;
