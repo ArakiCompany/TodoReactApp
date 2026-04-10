@@ -89,7 +89,7 @@ export default function UsersPage() {
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => router.push('/admin')}
+                onClick={() => router.push('/finances')}
                 className="text-xs text-zinc-600 border border-zinc-800 rounded-lg px-3 py-1.5 hover:text-zinc-400 hover:border-zinc-700 transition"
               >
                 ← financeiro
