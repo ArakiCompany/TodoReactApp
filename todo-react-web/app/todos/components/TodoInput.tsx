@@ -20,6 +20,7 @@ export default function TodoInput({ onAdd, loading }: Props) {
     <div className="flex gap-2 mb-6">
       <input
         value={value}
+        name='todo input'
         onChange={e => setValue(e.target.value)}
         onKeyDown={e => e.key === 'Enter' && handleSubmit()}
         placeholder="Adicionar nova tarefa..."
