@@ -27,6 +27,11 @@ export function isAdmin(): boolean {
   return getUserRole() === 'Admin';
 }
 
+export function isBusiness(): boolean {
+  const role = getUserRole();
+  return role === 'Business' || role === 'Admin';
+}
+
 export function isAuthenticated(): boolean {
   const payload = getTokenPayload();
   if (!payload) return false;

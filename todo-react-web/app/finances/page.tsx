@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import AdminRoute from '@/app/components/AdminRoute';
+import BusinessRoute from '@/app/components/BusinessRoute';
 import MetricCard from './components/MetricCard';
 import RevenueChart from './components/RevenueChart';
 import CategoryChart from './components/CategoryChart';
@@ -24,7 +24,7 @@ export default function AdminPage() {
   const [activePeriod, setActivePeriod] = useState('30d');
 
   return (
-    <AdminRoute>
+    <BusinessRoute>
       <div className="min-h-screen bg-zinc-950 p-4 sm:p-6">
         <div className="max-w-6xl mx-auto">
 
@@ -91,6 +91,6 @@ export default function AdminPage() {
 
         </div>
       </div>
-    </AdminRoute>
+    </BusinessRoute>
   );
 }
