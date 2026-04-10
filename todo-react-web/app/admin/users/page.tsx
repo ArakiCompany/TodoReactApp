@@ -1,19 +1,15 @@
 'use client';
 
 import { useQuery, useMutation } from '@apollo/client/react';
-import { gql } from '@apollo/client';
+import {  gql } from '@apollo/client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminRoute from '@/app/components/AdminRoute';
+import RoleModal from './components/RoleModal';
 
 const GET_USERS = gql`
   query GetUsers {
-    users {
-      id
-      email
-      role
-      createdAt
-    }
+    users { id email role createdAt }
   }
 `;
 
@@ -30,9 +26,7 @@ interface User {
   createdAt: string;
 }
 
-interface GetUsersResponse {
-  users: User[];
-}
+interface GetUsersResponse { users: User[]; }
 
 const roles = ['User', 'Business', 'Admin'];
 
@@ -44,7 +38,8 @@ const roleStyles: Record<string, string> = {
 
 export default function UsersPage() {
   const router = useRouter();
-  const [updating, setUpdating] = useState<string | null>(null);
+  const [modal, setModal] = useState<{ email: string; fromRole: string; toRole: string } | null>(null);
+  const [updating, setUpdating] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
 
   const { data, loading, refetch } = useQuery<GetUsersResponse>(GET_USERS, {
@@ -53,16 +48,22 @@ export default function UsersPage() {
 
   const [updateRole] = useMutation(UPDATE_ROLE);
 
-  async function handleRoleChange(email: string, role: string) {
-    setUpdating(email);
-    setSuccess(null);
+  function handleRoleClick(email: string, currentRole: string, newRole: string) {
+    if (currentRole === newRole) return;
+    setModal({ email, fromRole: currentRole, toRole: newRole });
+  }
+
+  async function handleConfirm() {
+    if (!modal) return;
+    setUpdating(true);
     try {
-      await updateRole({ variables: { email, role } });
+      await updateRole({ variables: { email: modal.email, role: modal.toRole } });
       await refetch();
-      setSuccess(email);
-      setTimeout(() => setSuccess(null), 2000);
+      setSuccess(modal.email);
+      setTimeout(() => setSuccess(null), 2500);
+      setModal(null);
     } finally {
-      setUpdating(null);
+      setUpdating(false);
     }
   }
 
@@ -88,58 +89,41 @@ export default function UsersPage() {
               </div>
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={() => router.push('/finances')}
-                className="text-xs text-zinc-600 border border-zinc-800 rounded-lg px-3 py-1.5 hover:text-zinc-400 hover:border-zinc-700 transition"
-              >
-                ← financeiro
-              </button>
-              <button
-                onClick={() => router.push('/todos')}
-                className="text-xs text-zinc-600 border border-zinc-800 rounded-lg px-3 py-1.5 hover:text-zinc-400 hover:border-zinc-700 transition"
-              >
-                ← todos
-              </button>
+              <button onClick={() => router.push('/finances')} className="text-xs text-zinc-600 border border-zinc-800 rounded-lg px-3 py-1.5 hover:text-zinc-400 hover:border-zinc-700 transition">← financeiro</button>
+              <button onClick={() => router.push('/todos')} className="text-xs text-zinc-600 border border-zinc-800 rounded-lg px-3 py-1.5 hover:text-zinc-400 hover:border-zinc-700 transition">← todos</button>
             </div>
           </div>
 
-          {/* Legenda de roles */}
-          <div className="flex gap-2 mb-6">
+          {/* Legenda */}
+          <div className="flex flex-wrap gap-2 mb-6">
             {roles.map(r => (
-              <span
-                key={r}
-                className={`text-xs font-mono px-2.5 py-1 rounded-full border ${roleStyles[r]}`}
-              >
+              <span key={r} className={`text-xs font-mono px-2.5 py-1 rounded-full border ${roleStyles[r]}`}>
                 {r}
               </span>
             ))}
-            <span className="text-xs text-zinc-700 font-mono self-center ml-2">
-              clique na role para alterar
-            </span>
+            <span className="text-xs text-zinc-700 font-mono self-center ml-1">clique para alterar</span>
           </div>
 
           {/* Lista */}
           {loading ? (
             <div className="flex flex-col gap-2">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-16 bg-zinc-900 rounded-xl animate-pulse" />
-              ))}
+              {[1,2,3].map(i => <div key={i} className="h-16 bg-zinc-900 rounded-xl animate-pulse" />)}
             </div>
           ) : (
             <div className="flex flex-col gap-2">
               {data?.users.map(user => (
                 <div
                   key={user.id}
-                  className="flex items-center gap-4 px-4 py-3.5 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700 transition group"
+                  className="flex items-center gap-4 px-4 py-3.5 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700 transition group animate-fadeIn"
                 >
                   {/* Avatar */}
-                  <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-mono text-zinc-400">
+                  <div className="w-9 h-9 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-mono text-zinc-400">
                       {user.email[0].toUpperCase()}
                     </span>
                   </div>
 
-                  {/* Email e data */}
+                  {/* Info */}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-zinc-300 truncate">{user.email}</p>
                     <p className="text-xs text-zinc-700 font-mono">
@@ -147,28 +131,27 @@ export default function UsersPage() {
                     </p>
                   </div>
 
-                  {/* Role atual */}
+                  {/* Sucesso */}
                   {success === user.email ? (
-                    <span className="text-xs font-mono text-green-400 flex items-center gap-1">
+                    <span className="text-xs font-mono text-green-400 flex items-center gap-1.5 animate-fadeIn">
                       <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="M5 13l4 4L19 7"/>
                       </svg>
-                      atualizado
+                      atualizado!
                     </span>
                   ) : (
                     <div className="flex gap-1.5">
                       {roles.map(role => (
                         <button
                           key={role}
-                          onClick={() => user.role !== role && handleRoleChange(user.email, role)}
-                          disabled={updating === user.email}
-                          className={`text-xs font-mono px-2.5 py-1 rounded-full border transition ${
+                          onClick={() => handleRoleClick(user.email, user.role, role)}
+                          className={`text-xs font-mono px-2.5 py-1 rounded-full border transition-all duration-150 ${
                             user.role === role
                               ? roleStyles[role]
-                              : 'bg-transparent border-zinc-800 text-zinc-600 hover:border-zinc-600 hover:text-zinc-400'
-                          } ${updating === user.email ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                              : 'bg-transparent border-zinc-800 text-zinc-600 hover:border-zinc-600 hover:text-zinc-400 cursor-pointer'
+                          }`}
                         >
-                          {updating === user.email && user.role !== role ? '...' : role}
+                          {role}
                         </button>
                       ))}
                     </div>
@@ -179,6 +162,19 @@ export default function UsersPage() {
           )}
         </div>
       </div>
+
+      {/* Modal */}
+      {modal && (
+        <RoleModal
+          isOpen={!!modal}
+          email={modal.email}
+          fromRole={modal.fromRole}
+          toRole={modal.toRole}
+          loading={updating}
+          onConfirm={handleConfirm}
+          onCancel={() => setModal(null)}
+        />
+      )}
     </AdminRoute>
   );
 }
