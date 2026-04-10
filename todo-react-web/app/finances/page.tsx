@@ -37,9 +37,6 @@ export default function AdminPage() {
                 </svg>
               </div>
               <h1 className="text-base font-medium text-zinc-100">Financeiro</h1>
-              <span className="text-xs font-mono bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 px-2 py-0.5 rounded-full">
-                Admin
-              </span>
             </div>
             <div className="flex items-center gap-2">
               {/* Period tabs */}
