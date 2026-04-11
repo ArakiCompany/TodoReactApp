@@ -5,7 +5,15 @@ import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
 
-export default function RevenueChart() {
+interface Props {
+  salary: number;
+  totalFixed: number;
+  totalVariable: number;
+  totalExpenses: number;
+  balance: number;
+}
+
+export default function RevenueChart({ salary, totalFixed, totalVariable, totalExpenses, balance }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<Chart | null>(null);
 
@@ -16,20 +24,18 @@ export default function RevenueChart() {
     chartRef.current = new Chart(ref.current, {
       type: 'bar',
       data: {
-        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+        labels: ['Salário', 'Gastos Fixos', 'Gastos Variáveis', 'Total Gastos', 'Saldo Livre'],
         datasets: [
           {
-            label: 'Receita',
-            data: [62, 71, 68, 75, 79, 84],
-            backgroundColor: '#6366f1',
-            borderRadius: 4,
-            borderSkipped: false,
-          },
-          {
-            label: 'Despesas',
-            data: [28, 31, 27, 33, 30, 32],
-            backgroundColor: '#27272a',
-            borderRadius: 4,
+            data: [salary, totalFixed, totalVariable, totalExpenses, balance > 0 ? balance : 0],
+            backgroundColor: [
+              '#4ade80',
+              '#6366f1',
+              '#fbbf24',
+              '#f87171',
+              '#818cf8',
+            ],
+            borderRadius: 6,
             borderSkipped: false,
           },
         ],
@@ -40,7 +46,9 @@ export default function RevenueChart() {
         plugins: {
           legend: { display: false },
           tooltip: {
-            callbacks: { label: ctx => `R$${ctx.raw}k` },
+            callbacks: {
+              label: ctx => `R$${Number(ctx.raw).toLocaleString('pt-BR')}`,
+            },
           },
         },
         scales: {
@@ -50,7 +58,11 @@ export default function RevenueChart() {
             border: { display: false },
           },
           y: {
-            ticks: { color: '#52525b', font: { size: 10, family: 'DM Mono' }, callback: v => `R$${v}k` },
+            ticks: {
+              color: '#52525b',
+              font: { size: 10, family: 'DM Mono' },
+              callback: v => `R$${Number(v).toLocaleString('pt-BR')}`,
+            },
             grid: { color: '#1c1c1f' },
             border: { display: false },
           },
@@ -59,25 +71,29 @@ export default function RevenueChart() {
     });
 
     return () => chartRef.current?.destroy();
-  }, []);
+  }, [salary, totalFixed, totalVariable, totalExpenses, balance]);
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 animate-fadeIn">
-      <p className="text-xs text-zinc-500 font-mono uppercase tracking-wider mb-4">
-        Receita vs Despesas
+      <p className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-4">
+        Visão geral financeira
       </p>
-      <div className="relative h-40">
+      <div className="relative h-44">
         <canvas ref={ref} />
       </div>
-      <div className="flex gap-4 mt-3">
-        <span className="flex items-center gap-1.5 text-xs text-zinc-500 font-mono">
-          <span className="w-2 h-2 rounded-sm bg-indigo-500 inline-block" />
-          Receita
-        </span>
-        <span className="flex items-center gap-1.5 text-xs text-zinc-500 font-mono">
-          <span className="w-2 h-2 rounded-sm bg-zinc-800 inline-block" />
-          Despesas
-        </span>
+      <div className="flex flex-wrap gap-3 mt-3">
+        {[
+          { label: 'Salário', color: '#4ade80' },
+          { label: 'Fixos', color: '#6366f1' },
+          { label: 'Variáveis', color: '#fbbf24' },
+          { label: 'Total gastos', color: '#f87171' },
+          { label: 'Saldo', color: '#818cf8' },
+        ].map(l => (
+          <span key={l.label} className="flex items-center gap-1.5 text-xs text-zinc-500 font-mono">
+            <span className="w-2 h-2 rounded-sm inline-block" style={{ background: l.color }} />
+            {l.label}
+          </span>
+        ))}
       </div>
     </div>
   );

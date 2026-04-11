@@ -6,17 +6,21 @@ import BusinessRoute from '@/app/components/BusinessRoute';
 import MetricCard from './components/MetricCard';
 import RevenueChart from './components/RevenueChart';
 import CategoryChart from './components/CategoryChart';
-import GoalsCard from './components/GoalsCard';
-import AnnualChart from './components/AnnualChart';
 import RecentTransactions from './components/RecentTransactions';
+import PdfGenerator from './components/PdfGenerator';
 import ExpenseTracker from './components/ExpenseTracker';
 
 const periods = ['7d', '30d', '90d', '1a'];
 
-interface FinanceData {
+interface FinanceState {
   salary: number;
   fixed: { id: string; name: string; value: number }[];
   variable: { id: string; name: string; value: number }[];
+  totalFixed: number;
+  totalVariable: number;
+  totalExpenses: number;
+  balance: number;
+  marginPercent: number;
 }
 
 function formatCurrency(value: number) {
@@ -27,45 +31,32 @@ function formatCurrency(value: number) {
 export default function FinancesPage() {
   const router = useRouter();
   const [activePeriod, setActivePeriod] = useState('30d');
-  const [financeData, setFinanceData] = useState<FinanceData | null>(() => {
-    if (typeof window === 'undefined') return null;
-    try {
-      const stored = localStorage.getItem('finance_data');
-      return stored ? JSON.parse(stored) : null;
-    } catch { return null; }
-  });
-
-  const totalFixed = financeData?.fixed.reduce((s, i) => s + i.value, 0) ?? 0;
-  const totalVariable = financeData?.variable.reduce((s, i) => s + i.value, 0) ?? 0;
-  const totalExpenses = totalFixed + totalVariable;
-  const salary = financeData?.salary ?? 0;
-  const netProfit = salary - totalExpenses;
-  const margin = salary > 0 ? ((netProfit / salary) * 100).toFixed(1) : '0';
+  const [finance, setFinance] = useState<FinanceState | null>(null);
 
   const metrics = [
     {
       label: 'Salário',
-      value: formatCurrency(salary),
+      value: formatCurrency(finance?.salary ?? 0),
       change: 'entrada mensal',
       positive: true,
     },
     {
       label: 'Despesas',
-      value: formatCurrency(totalExpenses),
-      change: `fixos: ${formatCurrency(totalFixed)} | variáveis: ${formatCurrency(totalVariable)}`,
+      value: formatCurrency(finance?.totalExpenses ?? 0),
+      change: finance ? `fixos ${formatCurrency(finance.totalFixed)} | var. ${formatCurrency(finance.totalVariable)}` : 'sem dados',
       positive: false,
     },
     {
       label: 'Saldo livre',
-      value: formatCurrency(netProfit),
-      change: netProfit >= 0 ? 'no positivo' : 'no negativo',
-      positive: netProfit >= 0,
+      value: formatCurrency(finance?.balance ?? 0),
+      change: (finance?.balance ?? 0) >= 0 ? 'no positivo' : 'no negativo',
+      positive: (finance?.balance ?? 0) >= 0,
     },
     {
       label: 'Margem',
-      value: `${margin}%`,
+      value: `${finance?.marginPercent ?? 0}%`,
       change: 'do salário restante',
-      positive: parseFloat(margin) >= 20,
+      positive: (finance?.marginPercent ?? 0) >= 20,
     },
   ];
 
@@ -88,6 +79,18 @@ export default function FinancesPage() {
               </span>
             </div>
             <div className="flex items-center gap-2">
+              {finance && (
+                <PdfGenerator
+                  salary={finance.salary}
+                  fixed={finance.fixed}
+                  variable={finance.variable}
+                  totalFixed={finance.totalFixed}
+                  totalVariable={finance.totalVariable}
+                  totalExpenses={finance.totalExpenses}
+                  balance={finance.balance}
+                  marginPercent={finance.marginPercent}
+                />
+              )}
               <div className="hidden sm:flex gap-0.5 bg-zinc-900 border border-zinc-800 rounded-lg p-1">
                 {periods.map(p => (
                   <button
@@ -101,34 +104,36 @@ export default function FinancesPage() {
                   </button>
                 ))}
               </div>
-              <button onClick={() => router.push('/todos')} className="text-xs text-zinc-600 border border-zinc-800 rounded-lg px-3 py-1.5 hover:text-zinc-400 hover:border-zinc-700 transition">
+              <button
+                onClick={() => router.push('/todos')}
+                className="text-xs text-zinc-600 border border-zinc-800 rounded-lg px-3 py-1.5 hover:text-zinc-400 hover:border-zinc-700 transition"
+              >
                 ← voltar
               </button>
             </div>
           </div>
 
-          {/* Metrics — dinâmicas */}
+          {/* Metrics */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4">
-            {metrics.map(m => (
-              <MetricCard key={m.label} {...m} />
-            ))}
+            {metrics.map(m => <MetricCard key={m.label} {...m} />)}
           </div>
 
-          {/* Charts + Expenses */}
+          {/* Main grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
             <div className="lg:col-span-2 flex flex-col gap-3">
-              <RevenueChart />
-              {/* Expense Tracker */}
-              <ExpenseTracker onUpdate={setFinanceData} />
+              <RevenueChart
+                salary={finance?.salary ?? 0}
+                totalFixed={finance?.totalFixed ?? 0}
+                totalVariable={finance?.totalVariable ?? 0}
+                totalExpenses={finance?.totalExpenses ?? 0}
+                balance={finance?.balance ?? 0}
+              />
+              <ExpenseTracker onUpdate={setFinance} />
             </div>
-            <RecentTransactions />
-          </div>
-
-          {/* Bottom row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <CategoryChart />
-            <GoalsCard />
-            <AnnualChart />
+            <div className="flex flex-col gap-3">
+              <RecentTransactions />
+              <CategoryChart />
+            </div>
           </div>
 
         </div>
