@@ -5,23 +5,9 @@ import { useRouter } from 'next/navigation';
 import BusinessRoute from '@/app/components/BusinessRoute';
 import MetricCard from './components/MetricCard';
 import RevenueChart from './components/RevenueChart';
-import CategoryChart from './components/CategoryChart';
-import RecentTransactions from './components/RecentTransactions';
-import PdfGenerator from './components/PdfGenerator';
 import ExpenseTracker from './components/ExpenseTracker';
-
-const periods = ['7d', '30d', '90d', '1a'];
-
-interface FinanceState {
-  salary: number;
-  fixed: { id: string; name: string; value: number }[];
-  variable: { id: string; name: string; value: number }[];
-  totalFixed: number;
-  totalVariable: number;
-  totalExpenses: number;
-  balance: number;
-  marginPercent: number;
-}
+import PdfGenerator from './components/PdfGenerator';
+import { FinanceDto } from './types/finance.types';
 
 function formatCurrency(value: number) {
   if (value >= 1000) return `R$${(value / 1000).toFixed(1)}k`;
@@ -30,20 +16,30 @@ function formatCurrency(value: number) {
 
 export default function FinancesPage() {
   const router = useRouter();
-  const [activePeriod, setActivePeriod] = useState('30d');
-  const [finance, setFinance] = useState<FinanceState | null>(null);
+  const now = new Date();
+  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [year, setYear] = useState(now.getFullYear());
+  const [finance, setFinance] = useState<FinanceDto | null>(null);
+
+  function handleMonthChange(m: number, y: number) {
+    setMonth(m);
+    setYear(y);
+    setFinance(null);
+  }
 
   const metrics = [
     {
       label: 'Salário',
       value: formatCurrency(finance?.salary ?? 0),
-      change: 'entrada mensal',
+      change: finance?.monthLabel ?? 'sem dados',
       positive: true,
     },
     {
       label: 'Despesas',
       value: formatCurrency(finance?.totalExpenses ?? 0),
-      change: finance ? `fixos ${formatCurrency(finance.totalFixed)} | var. ${formatCurrency(finance.totalVariable)}` : 'sem dados',
+      change: finance
+        ? `fixos ${formatCurrency(finance.totalFixed)} | var. ${formatCurrency(finance.totalVariable)}`
+        : 'sem dados',
       positive: false,
     },
     {
@@ -63,7 +59,7 @@ export default function FinancesPage() {
   return (
     <BusinessRoute>
       <div className="min-h-screen bg-zinc-950 p-4 sm:p-6">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-5xl mx-auto">
 
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -91,19 +87,6 @@ export default function FinancesPage() {
                   marginPercent={finance.marginPercent}
                 />
               )}
-              <div className="hidden sm:flex gap-0.5 bg-zinc-900 border border-zinc-800 rounded-lg p-1">
-                {periods.map(p => (
-                  <button
-                    key={p}
-                    onClick={() => setActivePeriod(p)}
-                    className={`text-xs font-mono px-2.5 py-1 rounded-md transition ${
-                      activePeriod === p ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-600 hover:text-zinc-400'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
               <button
                 onClick={() => router.push('/todos')}
                 className="text-xs text-zinc-600 border border-zinc-800 rounded-lg px-3 py-1.5 hover:text-zinc-400 hover:border-zinc-700 transition"
@@ -118,23 +101,18 @@ export default function FinancesPage() {
             {metrics.map(m => <MetricCard key={m.label} {...m} />)}
           </div>
 
-          {/* Main grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
-            <div className="lg:col-span-2 flex flex-col gap-3">
-              <RevenueChart
-                salary={finance?.salary ?? 0}
-                totalFixed={finance?.totalFixed ?? 0}
-                totalVariable={finance?.totalVariable ?? 0}
-                totalExpenses={finance?.totalExpenses ?? 0}
-                balance={finance?.balance ?? 0}
-              />
-              <ExpenseTracker onUpdate={setFinance} />
-            </div>
-            <div className="flex flex-col gap-3">
-              <RecentTransactions />
-              <CategoryChart />
-            </div>
+          {/* Chart histórico */}
+          <div className="mb-3">
+            <RevenueChart />
           </div>
+
+          {/* Expense Tracker com seletor de mês embutido */}
+          <ExpenseTracker
+            month={month}
+            year={year}
+            onMonthChange={handleMonthChange}
+            onUpdate={setFinance}
+          />
 
         </div>
       </div>

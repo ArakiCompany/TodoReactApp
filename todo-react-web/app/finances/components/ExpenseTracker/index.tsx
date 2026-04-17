@@ -3,16 +3,21 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQuery } from '@apollo/client/react';
 import { gql } from '@apollo/client';
-import { Expense, FinanceData, FinanceDto, GetFinanceResponse, SaveFinanceResponse } from '../../types/finance.types';
+import {
+  Expense, FinanceData, FinanceDto,
+  GetFinanceResponse, SaveFinanceResponse
+} from '../../types/finance.types';
 import SalaryInput from './SalaryInput';
 import ExpenseList from './ExpenseList';
 import FinanceSummary from './FinanceSummary';
 import SaveButton from './SaveButton';
+import MonthSelector from '../MonthSelector';
 
 const GET_FINANCE = gql`
-  query GetFinance {
-    finance {
-      id salary totalFixed totalVariable totalExpenses balance marginPercent updatedAt
+  query GetFinance($month: Int!, $year: Int!) {
+    finance(month: $month, year: $year) {
+      id month year monthLabel salary
+      totalFixed totalVariable totalExpenses balance marginPercent updatedAt
       fixed { id name value }
       variable { id name value }
     }
@@ -22,7 +27,8 @@ const GET_FINANCE = gql`
 const SAVE_FINANCE = gql`
   mutation SaveFinance($input: SaveFinanceInput!) {
     saveFinance(input: $input) {
-      id salary totalFixed totalVariable totalExpenses balance marginPercent updatedAt
+      id month year monthLabel salary
+      totalFixed totalVariable totalExpenses balance marginPercent updatedAt
       fixed { id name value }
       variable { id name value }
     }
@@ -30,25 +36,34 @@ const SAVE_FINANCE = gql`
 `;
 
 interface Props {
+  month: number;
+  year: number;
+  onMonthChange: (month: number, year: number) => void;
   onUpdate: (data: FinanceDto) => void;
 }
 
-export default function ExpenseTracker({ onUpdate }: Props) {
+export default function ExpenseTracker({ month, year, onMonthChange, onUpdate }: Props) {
   const [data, setData] = useState<FinanceData>({ salary: 0, fixed: [], variable: [] });
   const [saved, setSaved] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   const { data: queryData, loading } = useQuery<GetFinanceResponse>(GET_FINANCE, {
+    variables: { month, year },
     fetchPolicy: 'network-only',
   });
 
   useEffect(() => {
     const finance = queryData?.finance;
-    if (!finance) return;
     setTimeout(() => {
-      setData({ salary: finance.salary, fixed: finance.fixed, variable: finance.variable });
-      setLastUpdated(finance.updatedAt);
-      onUpdate(finance);
+      if (finance) {
+        setData({ salary: finance.salary, fixed: finance.fixed, variable: finance.variable });
+        setLastUpdated(finance.updatedAt);
+        onUpdate(finance);
+      } else {
+        // Mês sem dados — reseta
+        setData({ salary: 0, fixed: [], variable: [] });
+        setLastUpdated(null);
+      }
     }, 0);
   }, [queryData]);
 
@@ -81,6 +96,7 @@ export default function ExpenseTracker({ onUpdate }: Props) {
     const result = await saveFinance({
       variables: {
         input: {
+          month, year,
           salary: data.salary,
           fixed: data.fixed.map(({ id, name, value }) => ({ id, name, value })),
           variable: data.variable.map(({ id, name, value }) => ({ id, name, value })),
@@ -113,14 +129,17 @@ export default function ExpenseTracker({ onUpdate }: Props) {
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-4">
 
-      {/* Header */}
+      {/* Header com seletor de mês */}
       <div className="flex items-center justify-between">
         <p className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Meus gastos</p>
-        {lastUpdated && (
-          <span className="text-xs text-zinc-700 font-mono">
-            atualizado {new Date(lastUpdated).toLocaleDateString('pt-BR')}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {lastUpdated && (
+            <span className="text-xs text-zinc-700 font-mono hidden sm:block">
+              salvo {new Date(lastUpdated).toLocaleDateString('pt-BR')}
+            </span>
+          )}
+          <MonthSelector month={month} year={year} onChange={onMonthChange} />
+        </div>
       </div>
 
       <SalaryInput
@@ -143,12 +162,7 @@ export default function ExpenseTracker({ onUpdate }: Props) {
         />
       </div>
 
-      <FinanceSummary
-        salary={data.salary}
-        totalExpenses={totalExpenses}
-        balance={balance}
-      />
-
+      <FinanceSummary salary={data.salary} totalExpenses={totalExpenses} balance={balance} />
       <SaveButton saving={saving} saved={saved} onClick={handleSave} />
     </div>
   );
