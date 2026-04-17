@@ -52,6 +52,12 @@ function makeClient() {
   });
 }
 
+export function resetClient() {
+  if (client) {
+    client.clearStore();
+  }
+}
+
 export default function getClient() {
   if (typeof window === 'undefined') return makeClient();
   if (!client) client = makeClient();

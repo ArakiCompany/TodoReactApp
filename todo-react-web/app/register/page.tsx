@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMutation } from "@apollo/client/react";
 import { gql } from "@apollo/client";
 import { useRouter } from "next/navigation";
+import { resetClient } from "@/lib/apolloClient";
 
 const REGISTER = gql`
   mutation Register($email: String!, $password: String!) {
@@ -44,6 +45,7 @@ export default function RegisterPage() {
     }
 
     try {
+      resetClient();
       const { data } = await register({ variables: { email, password } });
       if (data?.register.token) {
         localStorage.setItem("token", data.register.token);

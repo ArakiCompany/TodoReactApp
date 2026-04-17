@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { isAdmin, isBusiness } from "@/lib/auth";
+import { resetClient } from "@/lib/apolloClient";
 
 interface Props {
   total: number;
@@ -23,6 +24,7 @@ export default function TodoHeader({ total, done, pending }: Props) {
 
   function handleLogout() {
     localStorage.removeItem("token");
+    resetClient();
     router.push("/login");
   }
 
