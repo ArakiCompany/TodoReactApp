@@ -5,6 +5,7 @@ import { useMutation } from "@apollo/client/react";
 import { gql } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import { resetClient } from "@/lib/apolloClient";
+import PasswordRequirements from "./components/PasswordRequirements";
 
 const REGISTER = gql`
   mutation Register($email: String!, $password: String!) {
@@ -44,8 +45,17 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!/[A-Z]/.test(password)) {
+      setLocalError("A senha deve ter pelo menos uma letra maiúscula.");
+      return;
+    }
+
+    if (!/[0-9]/.test(password)) {
+      setLocalError("A senha deve ter pelo menos um número.");
+      return;
+    }
+
     try {
-      resetClient();
       const { data } = await register({ variables: { email, password } });
       if (data?.register.token) {
         localStorage.setItem("token", data.register.token);
@@ -167,7 +177,7 @@ export default function RegisterPage() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Crie sua senha"
                   required
                   className="w-full px-3.5 py-2.5 pr-10 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 />
@@ -204,37 +214,9 @@ export default function RegisterPage() {
                 </button>
               </div>
 
-              {/* Força da senha */}
+              {/* Requisitos da senha */}
               {password.length > 0 && (
-                <div className="space-y-1">
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div
-                        key={i}
-                        className={`h-1 flex-1 rounded-full transition-all ${
-                          password.length >= i * 3
-                            ? i <= 1
-                              ? "bg-red-400"
-                              : i <= 2
-                                ? "bg-amber-400"
-                                : i <= 3
-                                  ? "bg-yellow-400"
-                                  : "bg-green-400"
-                            : "bg-zinc-200 dark:bg-zinc-700"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-xs text-zinc-400">
-                    {password.length < 3
-                      ? "Muito fraca"
-                      : password.length < 6
-                        ? "Fraca"
-                        : password.length < 9
-                          ? "Boa"
-                          : "Forte"}
-                  </p>
-                </div>
+                <PasswordRequirements password={password} />
               )}
             </div>
 
