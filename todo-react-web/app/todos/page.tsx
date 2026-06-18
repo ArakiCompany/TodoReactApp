@@ -10,6 +10,7 @@ import TodoFilters, { Filter } from "./components/TodoFilters";
 import TodoItem from "./components/TodoItem";
 import TodoEmpty from "./components/TodoEmpty";
 import TodoSkeleton from "./components/TodoSkeleton";
+import AiGenerator from "./components/AiGenerator";
 
 const GET_TODOS = gql`
   query GetTodos {
@@ -142,6 +143,9 @@ export default function TodosPage() {
           <div className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
             <TodoHeader total={todos.length} done={done} pending={pending} />
             <TodoInput onAdd={handleAdd} loading={addingTodo} />
+            <div className="flex justify-end mb-2">
+              <AiGenerator onSaved={refetch} />
+            </div>
             <TodoFilters active={filter} onChange={setFilter} />
 
             <div className="flex flex-col gap-2">
