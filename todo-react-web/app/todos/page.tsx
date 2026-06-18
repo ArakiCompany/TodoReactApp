@@ -2,7 +2,8 @@
 
 import { useQuery, useMutation } from "@apollo/client/react";
 import { gql } from "@apollo/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation';
 import ProtectedRoute from "@/app/components/ProtectedRoute";
 import TodoHeader from "./components/TodoHeader";
 import TodoInput from "./components/TodoInput";
@@ -11,6 +12,8 @@ import TodoItem from "./components/TodoItem";
 import TodoEmpty from "./components/TodoEmpty";
 import TodoSkeleton from "./components/TodoSkeleton";
 import AiGenerator from "./components/AiGenerator";
+import { isAuthenticated } from "@/lib/auth";
+import { GraphQLError } from "graphql";
 
 const GET_TODOS = gql`
   query GetTodos {
@@ -58,19 +61,35 @@ interface GetTodosResponse {
 }
 
 export default function TodosPage() {
+  const router = useRouter();
   const [filter, setFilter] = useState<Filter>("all");
   const [addingTodo, setAddingTodo] = useState(false);
 
-  const [skipQuery] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true;
-    return !localStorage.getItem("token");
-  });
+const [skipQuery] = useState<boolean>(() => {
+  if (typeof window === 'undefined') return true;
+  return !isAuthenticated(); // ← verifica existência E expiração
+});
 
-  const { data, loading, refetch } = useQuery<GetTodosResponse>(GET_TODOS, {
-    skip: skipQuery,
-    fetchPolicy: "network-only",
-    ssr: false,
-  });
+const { data, loading, error, refetch } = useQuery<GetTodosResponse>(GET_TODOS, {
+  skip: skipQuery,
+  fetchPolicy: 'network-only',
+  ssr: false,
+});
+
+useEffect(() => {
+if (error && typeof error === 'object' && 'graphQLErrors' in error) {
+    const graphQLErrors = (error).graphQLErrors as GraphQLError[];
+
+    const isUnauthorized = graphQLErrors?.some(
+      (e: GraphQLError) => e.message.toLowerCase().includes('not authorized')
+    );
+    
+    if (isUnauthorized) {
+      localStorage.removeItem('token');
+      router.push('/login');
+    }
+  }
+}, [error, router]);
 
   const [addTodo] = useMutation(ADD_TODO);
   const [completeTodo] = useMutation(COMPLETE_TODO);

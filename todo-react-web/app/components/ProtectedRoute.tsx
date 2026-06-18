@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { isAuthenticated } from '@/lib/auth';
+
 
 function ProtectedLoading() {
   return (
@@ -26,12 +28,14 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    // isAuthenticated já verifica se o token existe E se não expirou
+    if (!isAuthenticated()) {
+      localStorage.removeItem('token'); // limpa token expirado
       router.push('/login');
-    } else {
-      setTimeout(() => setAuthorized(true), 0);
+      return;
     }
+
+    setTimeout(() => setAuthorized(true), 0);
   }, [router]);
 
   if (!authorized) return <ProtectedLoading />;
