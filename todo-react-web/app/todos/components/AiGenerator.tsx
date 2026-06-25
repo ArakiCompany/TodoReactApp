@@ -82,7 +82,7 @@ export default function AiGenerator({ onSaved }: Props) {
   return (
     <>
       {/* Botão de abrir */}
-      <button
+      {/* <button
         onClick={() => setOpen(true)}
         className="flex items-center gap-1.5 text-xs font-medium text-indigo-400 hover:text-indigo-300 border border-indigo-900/50 hover:border-indigo-700 bg-indigo-950/20 hover:bg-indigo-950/40 rounded-lg px-3 py-2 transition"
       >
@@ -98,7 +98,7 @@ export default function AiGenerator({ onSaved }: Props) {
           <path d="M2 12l10 5 10-5" />
         </svg>
         Gerar com IA
-      </button>
+      </button> */}
 
       {/* Modal */}
       {open && (

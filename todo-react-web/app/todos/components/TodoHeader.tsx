@@ -47,6 +47,12 @@ export default function TodoHeader({ total, done, pending }: Props) {
             usuários →
           </a>
         )}
+        <a
+          href="/resume"
+          className="text-xs text-zinc-500 border border-zinc-800 rounded-md px-2.5 py-1 hover:text-zinc-300 hover:border-zinc-700 transition"
+        >
+          currículo →
+        </a>
         <button
           onClick={handleLogout}
           className="text-xs text-zinc-600 border border-zinc-800 rounded-md px-2.5 py-1 hover:text-zinc-400 hover:border-zinc-700 transition"
