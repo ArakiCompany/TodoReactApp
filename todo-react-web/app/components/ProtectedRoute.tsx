@@ -1,9 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { isAuthenticated } from '@/lib/auth';
-
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { isAuthenticated } from "@/lib/auth";
 
 function ProtectedLoading() {
   return (
@@ -11,8 +10,14 @@ function ProtectedLoading() {
       <div className="relative w-12 h-12 flex items-center justify-center">
         <div className="absolute inset-0 rounded-full border-2 border-indigo-500 animate-ping opacity-60" />
         <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center">
-          <svg className="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <svg
+            className="w-5 h-5 text-indigo-400"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           </svg>
         </div>
       </div>
@@ -23,20 +28,47 @@ function ProtectedLoading() {
   );
 }
 
-export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
+export default function ProtectedRoute({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
 
-  useEffect(() => {
-    // isAuthenticated já verifica se o token existe E se não expirou
+  const checkAuth = useCallback(() => {
     if (!isAuthenticated()) {
-      localStorage.removeItem('token'); // limpa token expirado
-      router.push('/login');
-      return;
+      localStorage.removeItem("token");
+      router.push("/login");
+      return false;
+    }
+    return true;
+  }, [router]);
+
+  useEffect(() => {
+    const ok = checkAuth();
+    if (ok) setTimeout(() => setAuthorized(true), 0);
+  }, [checkAuth]);
+
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        checkAuth();
+      }
     }
 
-    setTimeout(() => setAuthorized(true), 0);
-  }, [router]);
+    function handleFocus() {
+      checkAuth();
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [checkAuth]);
 
   if (!authorized) return <ProtectedLoading />;
 
