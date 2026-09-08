@@ -8,8 +8,10 @@ const pwaConfig = withPWA({
 });
 
 const nextConfig = {
-  // suas configurações existentes
-  serverExternalPackages: ["jspdf"]
+ experimental: {
+    turbo: undefined,
+  },
+    serverExternalPackages: ["jspdf"]
 };
 
 export default pwaConfig(nextConfig);
