@@ -70,7 +70,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
 
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <ApolloClientProvider>{children}</ApolloClientProvider>
         <Analytics />
         <SpeedInsights />

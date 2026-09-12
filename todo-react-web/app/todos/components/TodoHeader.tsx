@@ -69,12 +69,6 @@ export default function TodoHeader({ total, done, pending }: Props) {
           <p className="text-xs text-zinc-600 mt-1 font-mono">{today}</p>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <button
-            onClick={handleLogout}
-            className="text-xs text-zinc-600 border border-zinc-800 rounded-md px-2.5 py-1 hover:text-zinc-400 hover:border-zinc-700 transition"
-          >
-            sair →
-          </button>
           <div className="flex gap-1.5">
             <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-zinc-900 text-zinc-500 border border-zinc-800">
               {total} total
