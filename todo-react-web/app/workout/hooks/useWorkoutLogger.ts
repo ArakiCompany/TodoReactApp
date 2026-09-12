@@ -20,6 +20,14 @@ export interface LogForm {
   exercises: LogFormExercise[];
 }
 
+const getThirtyDaysAgo = () => {
+  const date = new Date();
+  date.setDate(date.getDate() - 30);
+  return date.toISOString();
+};
+
+const THIRTY_DAYS_AGO = getThirtyDaysAgo();
+
 export function useWorkoutLogger() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<LogForm | null>(null);
@@ -29,7 +37,7 @@ export function useWorkoutLogger() {
   const { data: logsData, loading, refetch } = useQuery<{ workoutLogs: WorkoutLog[] }>(
     GET_WORKOUT_LOGS,
     {
-      variables: { from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() },
+      variables: { from: THIRTY_DAYS_AGO },
       fetchPolicy: 'network-only',
     }
   );
