@@ -30,7 +30,7 @@ export default function TodoHeader({ total, done, pending }: Props) {
 
   return (
     <>
-      <div className="flex gap-2">
+      <div className="flex gap-2 mb-4">
         {business && (
           <a
             href="/finances"
@@ -53,6 +53,12 @@ export default function TodoHeader({ total, done, pending }: Props) {
         >
           currículo →
         </a>
+        <a
+          href="/workout"
+          className="text-xs text-zinc-500 border border-zinc-800 rounded-md px-2.5 py-1 hover:text-zinc-300 hover:border-zinc-700 transition"
+        >
+          treinos →
+        </a>
         <button
           onClick={handleLogout}
           className="text-xs text-zinc-600 border border-zinc-800 rounded-md px-2.5 py-1 hover:text-zinc-400 hover:border-zinc-700 transition"
@@ -61,27 +67,27 @@ export default function TodoHeader({ total, done, pending }: Props) {
         </button>
       </div>
 
-      <div className="flex items-start justify-between mb-7">
+      <div className="flex items-start justify-between mb-3">
         <div>
           <h1 className="text-xl font-medium text-zinc-100 tracking-tight">
             Minhas Tarefas
           </h1>
           <p className="text-xs text-zinc-600 mt-1 font-mono">{today}</p>
         </div>
-        <div className="flex flex-col items-end gap-2">
+      </div>
+        <div className="flex flex-col items-start gap-2 mb-7">
           <div className="flex gap-1.5">
-            <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-zinc-900 text-zinc-500 border border-zinc-800">
+            <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-zinc-900 text-zinc-500 border border-zinc-800">
               {total} total
             </span>
-            <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-green-950/30 text-green-400 border border-green-900/30">
+            <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-green-950/30 text-green-400 border border-green-900/30">
               {done} feitas
             </span>
-            <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-indigo-950/30 text-indigo-400 border border-indigo-900/30">
+            <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-indigo-950/30 text-indigo-400 border border-indigo-900/30">
               {pending} pendentes
             </span>
           </div>
         </div>
-      </div>
     </>
   );
 }
